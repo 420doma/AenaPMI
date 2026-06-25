@@ -1,0 +1,6 @@
+flask>=3.0
+requests>=2.31
+beautifulsoup4>=4.12
+openpyxl>=3.1        # per file .xlsx (Excel moderno)
+xlrd>=2.0            # per file .xls (Excel vecchio formato OLE2)
+lxml>=4.9            # parser HTML più veloce per BeautifulSoup
