@@ -1,0 +1,30 @@
+name: Aggiornamento Automatico Dati
+on:
+  schedule:
+    - cron: '0 4 5 * *' # Esegue ogni mese il giorno 5 alle 04:00
+  workflow_dispatch:    # Permette avvio manuale dal tasto "Run workflow" su GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Installa dipendenze
+        run: pip install requests beautifulsoup4 openpyxl
+      - name: Esegui Scraper
+        run: python scraperaena.py
+      - name: Commit e Push Dati
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/passengers.json
+          git commit -m "Aggiornamento automatico dati passeggeri" || exit 0
+          git push
+          
