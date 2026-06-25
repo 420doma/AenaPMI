@@ -37,6 +37,10 @@ def parse_with_xlrd(file_path: str) -> int | None:
     try:
         wb = xlrd.open_workbook(file_path)
         for sheet in wb.sheets():
+            # SALVATAGGIO CRITICO: Ignora i fogli "Acumulado" per evitare di prendere i dati annuali sommati
+            if "ACUM" in sheet.name.upper():
+                continue
+                
             for row_idx in range(sheet.nrows):
                 row_values = sheet.row_values(row_idx)
                 if any(isinstance(cell, str) and ("PALMA DE MALLORCA" in cell.upper() or cell.upper() == "PALMA") for cell in row_values):
@@ -49,6 +53,10 @@ def parse_with_openpyxl(file_path: str) -> int | None:
     try:
         wb = openpyxl.load_workbook(file_path, data_only=True)
         for sheetname in wb.sheetnames:
+            # SALVATAGGIO CRITICO: Ignora i fogli "Acumulado" per evitare di prendere i dati annuali sommati
+            if "ACUM" in sheetname.upper():
+                continue
+                
             sheet = wb[sheetname]
             for row in sheet.iter_rows(values_only=True):
                 if row and any(isinstance(cell, str) and ("PALMA DE MALLORCA" in cell.upper() or str(cell).upper() == "PALMA") for cell in row):
@@ -143,4 +151,4 @@ def scrape_and_update():
 
 if __name__ == "__main__":
     scrape_and_update()
-    
+            
