@@ -1,572 +1,446 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PMI · Statistiche Passeggeri</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  /* ─── Token system ─────────────────────────────────────────────────────── */
-  :root {
-    --bg:        #070C1B;
-    --surface:   #0D1528;
-    --surface2:  #132040;
-    --border:    #1A2D52;
-    --accent:    #E8A020;
-    --accent-lo: rgba(232,160,32,.12);
-    --blue:      #4F8FEE;
-    --blue-lo:   rgba(79,143,238,.10);
-    --text:      #E8EFFF;
-    --muted:     #5A728F;
-    --dim:       #324362;
-    --green:     #2DB88B;
-    --red:       #E85252;
-    --r:         8px;
-    --r-lg:      14px;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Palma Airport Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-yellow: #f59e0b;
+            --accent-blue: #3b82f6;
+            --border-color: #334155;
+        }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  body {
-    font-family: "Space Grotesk", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 24px 16px 48px;
-  }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-  .wrap { max-width: 1100px; margin: 0 auto; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
 
-  /* ─── Header ────────────────────────────────────────────────────────────── */
-  .header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .logo-box {
-    width: 48px; height: 48px;
-    background: var(--accent-lo);
-    border: 1.5px solid var(--accent);
-    border-radius: 12px;
-    display: grid; place-items: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-  .title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
-  .subtitle { font-size: .85rem; color: var(--muted); margin-top: 2px; }
-  .badge {
-    font-family: "JetBrains Mono", monospace;
-    font-size: .75rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--accent);
-    padding: 4px 10px;
-    border-radius: 20px;
-    letter-spacing: .05em;
-  }
+        /* ----- Anno Selector ----- */
+        .year-selector-container {
+            margin-bottom: 24px;
+        }
 
-  /* ─── Year selector ─────────────────────────────────────────────────────── */
-  .year-bar {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-  .year-label {
-    font-size: .8rem;
-    color: var(--muted);
-    margin-right: 6px;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-  }
-  .year-btn {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    color: var(--muted);
-    font-family: "JetBrains Mono", monospace;
-    font-size: .85rem;
-    font-weight: 500;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all .18s ease;
-  }
-  .year-btn:hover  { border-color: var(--dim); color: var(--text); }
-  .year-btn.active {
-    background: var(--accent-lo);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+        .year-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: block;
+        }
 
-  /* ─── Chart card ────────────────────────────────────────────────────────── */
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 28px 28px 20px;
-    margin-bottom: 20px;
-    position: relative;
-  }
-  .chart-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 22px;
-  }
-  .chart-title  { font-size: 1rem; font-weight: 600; color: var(--text); }
-  .chart-subtitle { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-  .legend { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-  .legend-item { display: flex; align-items: center; gap: 7px; font-size: .8rem; color: var(--muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .chart-wrap { position: relative; height: 340px; }
+        .year-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-  /* ─── Stats row ─────────────────────────────────────────────────────────── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-    margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 3px;
-    background: var(--accent);
-    opacity: 0;
-    transition: opacity .2s;
-  }
-  .stat-card.highlight::before { opacity: 1; }
-  .stat-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
-  .stat-value { font-family: "JetBrains Mono", monospace; font-size: 1.45rem; font-weight: 500; color: var(--text); line-height: 1; }
-  .stat-sub   { font-size: .78rem; color: var(--muted); margin-top: 5px; }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red   { color: var(--red); }
+        .year-btn {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-  /* ─── Footer bar ─────────────────────────────────────────────────────────── */
-  .footer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    font-size: .8rem;
-    color: var(--muted);
-  }
-  .footer-left { display: flex; align-items: center; gap: 8px; }
-  .dot-live { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
-  .dot-idle { background: var(--dim); animation: none; }
+        .year-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-main);
+        }
 
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+        .year-btn.active {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+            background-color: rgba(245, 158, 11, 0.1);
+        }
 
-  .btn-update {
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    color: var(--text);
-    font-family: "Space Grotesk", sans-serif;
-    font-size: .82rem;
-    font-weight: 500;
-    padding: 7px 16px;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all .18s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .btn-update:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-update:disabled { opacity: .5; cursor: not-allowed; }
+        /* ----- Card Grafico ----- */
+        .chart-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
 
-  /* ─── Loading / empty states ─────────────────────────────────────────────── */
-  .state-msg {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 280px;
-    gap: 12px;
-    color: var(--muted);
-    font-size: .9rem;
-  }
-  .state-msg .icon { font-size: 2.5rem; }
+        .chart-header {
+            margin-bottom: 20px;
+        }
 
-  /* ─── Toast ──────────────────────────────────────────────────────────────── */
-  .toast {
-    position: fixed;
-    bottom: 28px; right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 12px 18px;
-    border-radius: 10px;
-    font-size: .85rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,.5);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all .25s ease;
-    z-index: 999;
-    max-width: 320px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.ok   { border-color: var(--green); }
-  .toast.err  { border-color: var(--red); }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
 
-  @media (max-width: 600px) {
-    .chart-wrap { height: 260px; }
-    .chart-card { padding: 18px 14px; }
-    .header { flex-direction: column; align-items: flex-start; }
-  }
-</style>
+        .chart-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-yellow { background-color: var(--accent-yellow); }
+        .dot-blue { background-color: var(--accent-blue); }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* ----- Card Totale ----- */
+        .total-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-yellow);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .total-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .total-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .total-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ----- Tooltip Custom (opzionale per stile extra, ChartJS usa canvas ma possiamo personalizzarlo) ----- */
+        .custom-tooltip {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-size: 13px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+        }
+        
+        .tooltip-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-color-box {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+        
+        .tooltip-color-blue { background-color: var(--accent-blue); }
+        .tooltip-color-yellow { background-color: var(--accent-yellow); }
+
+    </style>
 </head>
 <body>
-<div class="wrap">
 
-  <header class="header">
-    <div class="header-left">
-      <div class="logo-box">✈️</div>
-      <div>
-        <div class="title">Aeroporto di Palma</div>
-        <div class="subtitle">Palma de Mallorca · PMI · Statistiche Passeggeri</div>
-      </div>
-    </div>
-    <span class="badge" id="badge-source">aena.es · Dati ufficiali</span>
-  </header>
-
-  <div class="year-bar">
-    <span class="year-label">Anno</span>
-    <div id="year-buttons"></div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-header">
-      <div>
-        <div class="chart-title" id="chart-title">Passeggeri mensili</div>
-        <div class="chart-subtitle" id="chart-subtitle">In attesa dei dati…</div>
-      </div>
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-dot" style="background:var(--accent);"></div>
-          <span id="leg-current">Anno selezionato</span>
+    <div class="container">
+        
+        <div class="year-selector-container">
+            <span class="year-label">Anno</span>
+            <div class="year-buttons" id="year-buttons">
+                </div>
         </div>
-        <div class="legend-item">
-          <div class="legend-dot" style="background:var(--blue);"></div>
-          <span id="leg-prev">Anno precedente</span>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">Arrivi mensili &bull; <span id="current-year"></span></h2>
+                <div class="chart-subtitle" id="comparison-text">Confronto con l'anno precedente</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-dot dot-yellow"></span>
+                        <span id="legend-current"></span>
+                    </div>
+                    <div class="legend-item" id="legend-prev-container">
+                        <span class="legend-dot dot-blue"></span>
+                        <span id="legend-prev"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="myChart"></canvas>
+            </div>
         </div>
-      </div>
+
+        <div class="total-card">
+            <div class="total-label">Totale Anno</div>
+            <div class="total-value" id="total-value">0</div>
+            <div class="total-subtitle"><span id="total-text"></span> arrivi</div>
+        </div>
+
     </div>
-    <div class="chart-wrap">
-      <div class="state-msg" id="loading-msg">
-        <div class="icon">🛫</div>
-        <div>Caricamento dati…</div>
-      </div>
-      <canvas id="myChart" style="display:none;"></canvas>
-    </div>
-  </div>
 
-  <div class="stats-grid">
-    <div class="stat-card highlight">
-      <div class="stat-label">Totale anno</div>
-      <div class="stat-value" id="stat-total">—</div>
-      <div class="stat-sub" id="stat-total-sub">passeggeri</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Mese di punta</div>
-      <div class="stat-value" id="stat-peak">—</div>
-      <div class="stat-sub" id="stat-peak-sub">—</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Media mensile</div>
-      <div class="stat-value" id="stat-avg">—</div>
-      <div class="stat-sub" id="stat-avg-sub">mesi con dati</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Variazione YoY</div>
-      <div class="stat-value" id="stat-yoy">—</div>
-      <div class="stat-sub" id="stat-yoy-sub">vs anno precedente</div>
-    </div>
-  </div>
+    <script>
+        const API_URL = 'data/data.json';
+        const MONTHS = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+        
+        let chartInstance = null;
+        let globalData = null;
 
-  <div class="footer-bar">
-    <div class="footer-left">
-      <div class="dot-idle" id="status-dot"></div>
-      <span id="status-text">Caricamento…</span>
-    </div>
-    <button class="btn-update" id="btn-update" onclick="loadData()">
-      🔄 Aggiorna dati
-    </button>
-  </div>
-
-</div>
-<div class="toast" id="toast"></div>
-
-<script>
-/* ─── Globals ────────────────────────────────────────────────────────────── */
-let allData      = {};
-let chart        = null;
-let selectedYear = null;
-
-const MONTHS_IT   = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
-const MONTHS_FULL = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
-                     "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
-
-/* ─── Logica di Caricamento (Aggiornata per GitHub Pages) ─── */
-async function loadData() {
-    try {
-        // Legge il file JSON direttamente dal repository
-        const response = await fetch('data/passengers.json');
-        const data = await response.json();
-
-        // Nasconde il loader e passa i dati alla tua funzione di grafica
-        document.getElementById("loading-msg").style.display = 'none';
-        renderDashboard(data);
-    } catch (e) {
-        console.error("Errore:", e);
-        document.getElementById("loading-msg").innerHTML = "❌ Errore nel caricamento dati.";
-    }
-}
-
-function renderDashboard(data) {
-    console.log("Dati ricevuti:", data);
-
-    allData = data;
-    const years = Object.keys(allData).sort();
-    if (!years.length) {
-        showEmpty("Nessun dato disponibile.");
-        return;
-    }
-
-    buildYearButtons(years);
-    selectedYear = years[years.length - 1];
-    setActiveYear(selectedYear);
-    renderChart(selectedYear);
-
-    document.getElementById("badge-source").textContent = `aena.es · ${years[0]}–${years[years.length - 1]}`;
-    document.getElementById("status-dot").className = "dot-idle";
-    document.getElementById("status-text").textContent = `${years[0]}–${years[years.length - 1]} · ${Object.values(allData).reduce((t, y) => t + Object.keys(y).length, 0)} rilevazioni`;
-}
-
-// Avvio
-loadData();
-
-/* ─── Year buttons ────────────────────────────────────────────────────────── */
-function buildYearButtons(years) {
-    const container = document.getElementById("year-buttons");
-    container.innerHTML = "";
-    years.forEach(y => {
-        const btn = document.createElement("button");
-        btn.className   = "year-btn";
-        btn.id          = `btn-${y}`;
-        btn.textContent = y;
-        btn.onclick     = () => { selectedYear = y; setActiveYear(y); renderChart(y); };
-        container.appendChild(btn);
-    });
-}
-
-function setActiveYear(year) {
-    document.querySelectorAll(".year-btn").forEach(b => b.classList.remove("active"));
-    const target = document.getElementById(`btn-${year}`);
-    if (target) target.classList.add("active");
-}
-
-/* ─── Chart rendering ─────────────────────────────────────────────────────── */
-function getYearArray(year) {
-    const raw = allData[year] || {};
-    return Array.from({length: 12}, (_, i) => raw[String(i + 1)] ?? null);
-}
-
-function renderChart(year) {
-    const loading = document.getElementById("loading-msg");
-    const canvas  = document.getElementById("myChart");
-
-    loading.style.display = "none";
-    canvas.style.display  = "block";
-
-    const prevYear = String(parseInt(year) - 1);
-    const currData = getYearArray(year);
-    const prevData = getYearArray(prevYear);
-    const hasPrev  = Object.keys(allData[prevYear] || {}).length > 0;
-
-    document.getElementById("leg-current").textContent = year;
-    document.getElementById("leg-prev").textContent    = hasPrev ? prevYear : "Anno precedente (n/d)";
-
-    document.getElementById("chart-title").textContent =
-        `Passeggeri mensili · ${year}`;
-    document.getElementById("chart-subtitle").textContent =
-        hasPrev ? `Confronto con ${prevYear} (linea blu)` : `Dati anno ${year}`;
-
-    const datasets = [
-        {
-            type:            "bar",
-            label:           year,
-            data:            currData,
-            backgroundColor: "rgba(232,160,32,.55)",
-            borderColor:     "#E8A020",
-            borderWidth:     1.5,
-            borderRadius:    5,
-            borderSkipped:   false,
-            order:           2,
-        },
-    ];
-
-    if (hasPrev) {
-        datasets.push({
-            type:                 "line",
-            label:                prevYear,
-            data:                 prevData,
-            borderColor:          "#4F8FEE",
-            backgroundColor:      "rgba(79,143,238,.07)",
-            borderWidth:          2,
-            pointBackgroundColor: "#4F8FEE",
-            pointRadius:          4,
-            pointHoverRadius:     6,
-            tension:              0.35,
-            fill:                 false,
-            order:                1,
-        });
-    }
-
-    const cfg = {
-        type: "bar",
-        data: { labels: MONTHS_IT, datasets },
-        options: {
-            responsive:          true,
-            maintainAspectRatio: false,
-            interaction:         { mode: "index", intersect: false },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: "rgba(13,21,40,.95)",
-                    borderColor:     "rgba(26,45,82,.8)",
-                    borderWidth:     1,
-                    titleColor:      "#E8EFFF",
-                    bodyColor:       "#8BA0C0",
-                    padding:         12,
-                    callbacks: {
-                        title: items => MONTHS_FULL[items[0].dataIndex],
-                        label: ctx => {
-                            if (ctx.raw === null || ctx.raw === undefined) return null;
-                            return ` ${ctx.dataset.label}: ${fmt(ctx.raw)} pax`;
-                        },
-                    },
-                },
-            },
-            scales: {
-                x: {
-                    grid:   { display: false },
-                    ticks:  { color: "#5A728F", font: { family: "JetBrains Mono", size: 12 } },
-                    border: { color: "#1A2D52" },
-                },
-                y: {
-                    grid:   { color: "rgba(26,45,82,.5)", drawBorder: false },
-                    border: { display: false },
-                    ticks:  {
-                        color: "#5A728F",
-                        font:  { family: "JetBrains Mono", size: 11 },
-                        callback: v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M`
-                                               : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K`
-                                               : String(v),
-                    },
-                },
-            },
-        },
-    };
-
-    if (chart) chart.destroy();
-    chart = new Chart(canvas, cfg);
-
-    updateStats(year, prevYear, currData, prevData);
-}
-
-/* ─── Stats cards ─────────────────────────────────────────────────────────── */
-function updateStats(year, prevYear, currData, prevData) {
-    const valid = currData.filter(v => v !== null);
-    if (!valid.length) {
-        ["stat-total","stat-peak","stat-avg","stat-yoy"].forEach(id =>
-            document.getElementById(id).textContent = "—"
-        );
-        return;
-    }
-
-    const total = valid.reduce((a, b) => a + b, 0);
-    document.getElementById("stat-total").textContent     = fmtM(total);
-    document.getElementById("stat-total-sub").textContent = `${fmt(total)} passeggeri`;
-
-    const peakVal = Math.max(...valid);
-    const peakIdx = currData.findIndex(v => v === peakVal);
-    document.getElementById("stat-peak").textContent     = fmtM(peakVal);
-    document.getElementById("stat-peak-sub").textContent = MONTHS_FULL[peakIdx] || "—";
-
-    const avg = Math.round(total / valid.length);
-    document.getElementById("stat-avg").textContent     = fmtM(avg);
-    document.getElementById("stat-avg-sub").textContent = `${valid.length} mesi registrati`;
-
-    const prevValid = prevData.filter(v => v !== null);
-    const yoyEl     = document.getElementById("stat-yoy");
-    const yoySub    = document.getElementById("stat-yoy-sub");
-
-    if (prevValid.length > 0) {
-        let currSum = 0, prevSum = 0;
-        currData.forEach((v, i) => {
-            if (v !== null && prevData[i] !== null) {
-                currSum += v;
-                prevSum += prevData[i];
+        // Formattatori
+        const formatNumber = (num) => new Intl.NumberFormat('it-IT').format(num);
+        const formatMillions = (num) => {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
             }
-        });
-        if (prevSum > 0) {
-            const pct  = ((currSum - prevSum) / prevSum * 100).toFixed(1);
-            const sign = pct >= 0 ? "+" : "";
-            yoyEl.textContent  = `${sign}${pct}%`;
-            yoyEl.className    = `stat-value ${pct >= 0 ? "green" : "red"}`;
-            yoySub.textContent = `vs ${prevYear} (mesi comparabili)`;
-        }
-    } else {
-        yoyEl.textContent  = "—";
-        yoySub.textContent = "Nessun dato precedente";
-    }
-}
+            return formatNumber(num);
+        };
 
-/* ─── Helpers ─────────────────────────────────────────────────────────────── */
-function fmt(n) {
-    if (n == null) return "—";
-    return new Intl.NumberFormat("it-IT").format(n);
-}
-function fmtM(n) {
-    if (n == null) return "—";
-    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
-    if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
-    return String(n);
-}
-function showEmpty(msg) {
-    document.getElementById("loading-msg").innerHTML =
-        `<div class="icon">📭</div><div>${msg}</div>`;
-}
-let toastTimer;
-function showToast(msg, type = "") {
-    const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.className   = `toast ${type} show`;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.className = "toast"; }, 4000);
-}
-</script>
+        // Inizializzazione
+        async function init() {
+            try {
+                // Aggiungiamo un timestamp per evitare la cache durante lo sviluppo
+                const response = await fetch(API_URL + '?t=' + new Date().getTime());
+                globalData = await response.json();
+                
+                const years = Object.keys(globalData).sort((a, b) => a - b);
+                if (years.length === 0) return;
+
+                const defaultYear = years[years.length - 1]; // Prende l'ultimo anno disponibile
+                
+                buildYearButtons(years, defaultYear);
+                renderDashboard(defaultYear);
+
+            } catch (error) {
+                console.error("Errore nel caricamento dei dati:", error);
+                document.getElementById('total-value').innerText = "Errore";
+                document.getElementById('total-text').innerText = "Impossibile caricare i dati.";
+            }
+        }
+
+        function buildYearButtons(years, activeYear) {
+            const container = document.getElementById('year-buttons');
+            container.innerHTML = '';
+            
+            years.forEach(year => {
+                const btn = document.createElement('button');
+                btn.className = `year-btn ${year === activeYear ? 'active' : ''}`;
+                btn.innerText = year;
+                btn.onclick = () => {
+                    // Rimuovi classe active a tutti
+                    document.querySelectorAll('.year-btn').forEach(b => b.classList.remove('active'));
+                    // Aggiungi active al cliccato
+                    btn.classList.add('active');
+                    // Rendi dashboard
+                    renderDashboard(year);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderDashboard(year) {
+            const prevYear = (parseInt(year) - 1).toString();
+            
+            const currentDataRaw = globalData[year] || new Array(12).fill(0);
+            const prevDataRaw = globalData[prevYear] || new Array(12).fill(0);
+
+            // Per evitare che i mesi futuri (a 0) facciano crollare il grafico a 0, mettiamo null
+            // Assumiamo che se il valore è esattamente 0 e siamo nell'anno corrente, il dato non c'è ancora.
+            // (Aena non pubblica mesi a 0, tranne casi assurdi come COVID estremo, ma in genere se non c'è dato è 0)
+            const currentData = currentDataRaw.map(v => v === 0 ? null : v);
+            const prevData = prevDataRaw.map(v => v === 0 ? null : v);
+
+            // Calcolo totale dell'anno selezionato
+            const total = currentDataRaw.reduce((acc, val) => acc + val, 0);
+
+            // Aggiornamento testi interfaccia
+            document.getElementById('current-year').innerText = year;
+            document.getElementById('legend-current').innerText = year;
+            
+            if (globalData[prevYear]) {
+                document.getElementById('comparison-text').innerText = `Confronto con ${prevYear} (linea blu)`;
+                document.getElementById('legend-prev-container').style.display = 'flex';
+                document.getElementById('legend-prev').innerText = prevYear;
+            } else {
+                document.getElementById('comparison-text').innerText = `Nessun dato di confronto per il ${prevYear}`;
+                document.getElementById('legend-prev-container').style.display = 'none';
+            }
+
+            document.getElementById('total-value').innerText = formatMillions(total);
+            document.getElementById('total-text').innerText = formatNumber(total);
+
+            updateChart(year, prevYear, currentData, prevData);
+        }
+
+        function updateChart(year, prevYear, currentData, prevData) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const datasets = [];
+
+            // Aggiungiamo prima l'anno precedente (Linea) così sta dietro le barre
+            if (globalData[prevYear]) {
+                datasets.push({
+                    label: prevYear,
+                    data: prevData,
+                    type: 'line',
+                    borderColor: '#3b82f6', // var(--accent-blue)
+                    backgroundColor: '#3b82f6',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.4, // Curva morbida
+                    spanGaps: true // Collega i punti se ci sono buchi
+                });
+            }
+
+            // Anno corrente (Barre)
+            datasets.push({
+                label: year,
+                data: currentData,
+                type: 'bar',
+                backgroundColor: '#f59e0b', // var(--accent-yellow)
+                borderRadius: 4,
+                barPercentage: 0.6,
+            });
+
+            chartInstance = new Chart(ctx, {
+                data: {
+                    labels: MONTHS,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            display: false // Usiamo la nostra legenda custom in HTML
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatNumber(context.parsed.y) + ' arrivi';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 11 }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#1e293b', // Linee di griglia molto scure
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { size: 11 },
+                                maxTicksLimit: 6,
+                                callback: function(value) {
+                                    if(value === 0) return '0';
+                                    let suffix = value >= 1e6 ? 'M' : value >= 1e3 ? 'K' : '';
+                                    let shortVal = value >= 1e6 ? value / 1e6 : value >= 1e3 ? value / 1e3 : value;
+                                    return shortVal + suffix;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Avvio
+        init();
+    </script>
 </body>
-</html>
+  </html>
+  
