@@ -34,4 +34,3 @@ jobs:
           git add data/passengers.json
           git commit -m "Aggiornamento automatico dati passeggeri" || exit 0
           git push
-          
