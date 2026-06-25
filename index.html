@@ -1,52 +1,70 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PMI · Statistiche Passeggeri</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-  :root {
-    --bg: #070C1B; --surface: #0D1528; --surface2: #132040; --border: #1A2D52;
-    --accent: #E8A020; --blue: #4F8FEE; --text: #E8EFFF; --muted: #5A728F;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; margin: 0; padding: 20px; }
-  /* ... (Mantieni qui il tuo CSS originale per non perdere lo stile) ... */
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMI · Statistiche Passeggeri</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root { --bg: #070C1B; --text: #E8EFFF; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
+        #app { max-width: 800px; margin: auto; }
+        #loading-msg { text-align: center; font-size: 1.2rem; margin-top: 50px; }
+    </style>
 </head>
 <body>
     <div id="app">
         <h1>🛫 Statistiche Passeggeri PMI</h1>
-        <div id="loading-msg">Caricamento dati...</div>
+        <div id="loading-msg">Caricamento dati in corso...</div>
         <canvas id="myChart"></canvas>
     </div>
 
 <script>
-    // Caricamento diretto dal file statico
     async function loadData() {
         try {
+            // Qui punta DIRETTAMENTE al file nel tuo repository
             const response = await fetch('data/passengers.json');
+            if (!response.ok) throw new Error("File non trovato");
+            
             const data = await response.json();
             renderDashboard(data);
         } catch (e) {
-            console.error("Errore caricamento:", e);
-            document.getElementById("loading-msg").textContent = "❌ Errore caricamento dati.";
+            console.error("Errore:", e);
+            document.getElementById("loading-msg").textContent = "❌ Errore: File JSON non trovato o il formato è errato.";
         }
     }
 
     function renderDashboard(data) {
         document.getElementById("loading-msg").style.display = 'none';
-        // QUI INSERISCI LA TUA LOGICA DI GRAFICI (Chart.js)
-        // Usa 'data' come sorgente dati
-        console.log("Dati caricati correttamente:", data);
+        
+        // ESEMPIO DI LOGICA: trasforma il JSON {anno: {mese: valore}} in formato Chart.js
+        const labels = [];
+        const values = [];
+
+        // Cicla gli anni e i mesi per riempire i dati
+        Object.keys(data).sort().forEach(year => {
+            Object.keys(data[year]).sort((a,b) => a-b).forEach(month => {
+                labels.push(`${month}/${year}`);
+                values.push(data[year][month]);
+            });
+        });
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Passeggeri',
+                    data: values,
+                    backgroundColor: '#4F8FEE'
+                }]
+            },
+            options: { responsive: true }
+        });
     }
 
     loadData();
-
-    function fmt(n) { return new Intl.NumberFormat("it-IT").format(n); }
-    /* ... (Mantieni qui il resto delle tue funzioni JS originali) ... */
 </script>
 </body>
 </html>
