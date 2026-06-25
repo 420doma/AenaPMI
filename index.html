@@ -14,7 +14,7 @@
     --surface:   #0D1528;
     --surface2:  #132040;
     --border:    #1A2D52;
-    --accent:    #E8A020;      /* ambra — luci di pista */
+    --accent:    #E8A020;
     --accent-lo: rgba(232,160,32,.12);
     --blue:      #4F8FEE;
     --blue-lo:   rgba(79,143,238,.10);
@@ -37,7 +37,6 @@
     padding: 24px 16px 48px;
   }
 
-  /* ─── Layout ────────────────────────────────────────────────────────────── */
   .wrap { max-width: 1100px; margin: 0 auto; }
 
   /* ─── Header ────────────────────────────────────────────────────────────── */
@@ -125,30 +124,11 @@
     gap: 12px;
     margin-bottom: 22px;
   }
-  .chart-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text);
-  }
+  .chart-title  { font-size: 1rem; font-weight: 600; color: var(--text); }
   .chart-subtitle { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-  .legend {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: .8rem;
-    color: var(--muted);
-  }
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+  .legend { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: .8rem; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .chart-wrap { position: relative; height: 340px; }
 
   /* ─── Stats row ─────────────────────────────────────────────────────────── */
@@ -176,25 +156,9 @@
     transition: opacity .2s;
   }
   .stat-card.highlight::before { opacity: 1; }
-  .stat-label {
-    font-size: .75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    margin-bottom: 6px;
-  }
-  .stat-value {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 1.45rem;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1;
-  }
-  .stat-sub {
-    font-size: .78rem;
-    color: var(--muted);
-    margin-top: 5px;
-  }
+  .stat-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .stat-value { font-family: "JetBrains Mono", monospace; font-size: 1.45rem; font-weight: 500; color: var(--text); line-height: 1; }
+  .stat-sub   { font-size: .78rem; color: var(--muted); margin-top: 5px; }
   .stat-value.green { color: var(--green); }
   .stat-value.red   { color: var(--red); }
 
@@ -211,18 +175,10 @@
     color: var(--muted);
   }
   .footer-left { display: flex; align-items: center; gap: 8px; }
-  .dot-live {
-    width: 7px; height: 7px;
-    background: var(--green);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
+  .dot-live { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
   .dot-idle { background: var(--dim); animation: none; }
 
-  @keyframes pulse {
-    0%,100% { opacity: 1; }
-    50%      { opacity: .3; }
-  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
   .btn-update {
     background: var(--surface2);
@@ -237,7 +193,7 @@
     transition: all .18s;
     display: flex; align-items: center; gap: 6px;
   }
-  .btn-update:hover  { border-color: var(--accent); color: var(--accent); }
+  .btn-update:hover { border-color: var(--accent); color: var(--accent); }
   .btn-update:disabled { opacity: .5; cursor: not-allowed; }
 
   /* ─── Loading / empty states ─────────────────────────────────────────────── */
@@ -274,7 +230,6 @@
   .toast.ok   { border-color: var(--green); }
   .toast.err  { border-color: var(--red); }
 
-  /* ─── Responsive ─────────────────────────────────────────────────────────── */
   @media (max-width: 600px) {
     .chart-wrap { height: 260px; }
     .chart-card { padding: 18px 14px; }
@@ -285,7 +240,6 @@
 <body>
 <div class="wrap">
 
-  <!-- ─── Header ─────────────────────────────────────────────────────────── -->
   <header class="header">
     <div class="header-left">
       <div class="logo-box">✈️</div>
@@ -297,13 +251,11 @@
     <span class="badge" id="badge-source">aena.es · Dati ufficiali</span>
   </header>
 
-  <!-- ─── Year selector ──────────────────────────────────────────────────── -->
   <div class="year-bar">
     <span class="year-label">Anno</span>
     <div id="year-buttons"></div>
   </div>
 
-  <!-- ─── Chart card ─────────────────────────────────────────────────────── -->
   <div class="chart-card">
     <div class="chart-header">
       <div>
@@ -321,17 +273,15 @@
         </div>
       </div>
     </div>
-    <div class="chart-wrap" id="chart-wrap">
+    <div class="chart-wrap">
       <div class="state-msg" id="loading-msg">
         <div class="icon">🛫</div>
         <div>Caricamento dati…</div>
       </div>
-      <!-- id="myChart" per compatibilità con le funzioni dello script incollato -->
-      <canvas id="myChart" style="width:100%;height:100%;"></canvas>
+      <canvas id="myChart" style="display:none;"></canvas>
     </div>
   </div>
 
-  <!-- ─── Stats row ──────────────────────────────────────────────────────── -->
   <div class="stats-grid">
     <div class="stat-card highlight">
       <div class="stat-label">Totale anno</div>
@@ -355,58 +305,268 @@
     </div>
   </div>
 
-  <!-- ─── Footer ─────────────────────────────────────────────────────────── -->
   <div class="footer-bar">
     <div class="footer-left">
-      <div class="dot-live" id="status-dot"></div>
+      <div class="dot-idle" id="status-dot"></div>
       <span id="status-text">Caricamento…</span>
     </div>
-    <button class="btn-update" id="btn-update">
+    <button class="btn-update" id="btn-update" onclick="loadData()">
       🔄 Aggiorna dati
     </button>
   </div>
 
 </div>
-
-<!-- ─── Toast ──────────────────────────────────────────────────────────────── -->
 <div class="toast" id="toast"></div>
 
 <script>
-    /* ─── Logica di Caricamento (Aggiornata per GitHub Pages) ─── */
-    async function loadData() {
-        try {
-            // Legge il file JSON direttamente dal repository
-            const response = await fetch('data/passengers.json');
-            const data = await response.json();
-            
-            // Nasconde il loader e passa i dati alla tua funzione di grafica
-            document.getElementById("loading-msg").style.display = 'none';
-            renderDashboard(data);
-        } catch (e) {
-            console.error("Errore:", e);
-            document.getElementById("loading-msg").innerHTML = "❌ Errore nel caricamento dati.";
-        }
+/* ─── Globals ────────────────────────────────────────────────────────────── */
+let allData      = {};
+let chart        = null;
+let selectedYear = null;
+
+const MONTHS_IT   = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+const MONTHS_FULL = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+                     "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+
+/* ─── Logica di Caricamento (Aggiornata per GitHub Pages) ─── */
+async function loadData() {
+    try {
+        // Legge il file JSON direttamente dal repository
+        const response = await fetch('data/passengers.json');
+        const data = await response.json();
+
+        // Nasconde il loader e passa i dati alla tua funzione di grafica
+        document.getElementById("loading-msg").style.display = 'none';
+        renderDashboard(data);
+    } catch (e) {
+        console.error("Errore:", e);
+        document.getElementById("loading-msg").innerHTML = "❌ Errore nel caricamento dati.";
+    }
+}
+
+function renderDashboard(data) {
+    console.log("Dati ricevuti:", data);
+
+    allData = data;
+    const years = Object.keys(allData).sort();
+    if (!years.length) {
+        showEmpty("Nessun dato disponibile.");
+        return;
     }
 
-    function renderDashboard(data) {
-        // Qui inserisci la tua vecchia logica di Chart.js che usavi prima
-        // Se avevi una funzione complessa, incollala qui sotto:
-        console.log("Dati ricevuti:", data);
-        
-        // Esempio rapido di rendering (adatta questo alla tua logica originale)
-        const ctx = document.getElementById('myChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(data), // Es. Anni
-                datasets: [{ label: 'Passeggeri', data: Object.values(data).map(d => Object.values(d)[0]), backgroundColor: '#4F8FEE' }]
-            },
-            options: { responsive: true }
+    buildYearButtons(years);
+    selectedYear = years[years.length - 1];
+    setActiveYear(selectedYear);
+    renderChart(selectedYear);
+
+    document.getElementById("badge-source").textContent = `aena.es · ${years[0]}–${years[years.length - 1]}`;
+    document.getElementById("status-dot").className = "dot-idle";
+    document.getElementById("status-text").textContent = `${years[0]}–${years[years.length - 1]} · ${Object.values(allData).reduce((t, y) => t + Object.keys(y).length, 0)} rilevazioni`;
+}
+
+// Avvio
+loadData();
+
+/* ─── Year buttons ────────────────────────────────────────────────────────── */
+function buildYearButtons(years) {
+    const container = document.getElementById("year-buttons");
+    container.innerHTML = "";
+    years.forEach(y => {
+        const btn = document.createElement("button");
+        btn.className   = "year-btn";
+        btn.id          = `btn-${y}`;
+        btn.textContent = y;
+        btn.onclick     = () => { selectedYear = y; setActiveYear(y); renderChart(y); };
+        container.appendChild(btn);
+    });
+}
+
+function setActiveYear(year) {
+    document.querySelectorAll(".year-btn").forEach(b => b.classList.remove("active"));
+    const target = document.getElementById(`btn-${year}`);
+    if (target) target.classList.add("active");
+}
+
+/* ─── Chart rendering ─────────────────────────────────────────────────────── */
+function getYearArray(year) {
+    const raw = allData[year] || {};
+    return Array.from({length: 12}, (_, i) => raw[String(i + 1)] ?? null);
+}
+
+function renderChart(year) {
+    const loading = document.getElementById("loading-msg");
+    const canvas  = document.getElementById("myChart");
+
+    loading.style.display = "none";
+    canvas.style.display  = "block";
+
+    const prevYear = String(parseInt(year) - 1);
+    const currData = getYearArray(year);
+    const prevData = getYearArray(prevYear);
+    const hasPrev  = Object.keys(allData[prevYear] || {}).length > 0;
+
+    document.getElementById("leg-current").textContent = year;
+    document.getElementById("leg-prev").textContent    = hasPrev ? prevYear : "Anno precedente (n/d)";
+
+    document.getElementById("chart-title").textContent =
+        `Passeggeri mensili · ${year}`;
+    document.getElementById("chart-subtitle").textContent =
+        hasPrev ? `Confronto con ${prevYear} (linea blu)` : `Dati anno ${year}`;
+
+    const datasets = [
+        {
+            type:            "bar",
+            label:           year,
+            data:            currData,
+            backgroundColor: "rgba(232,160,32,.55)",
+            borderColor:     "#E8A020",
+            borderWidth:     1.5,
+            borderRadius:    5,
+            borderSkipped:   false,
+            order:           2,
+        },
+    ];
+
+    if (hasPrev) {
+        datasets.push({
+            type:                 "line",
+            label:                prevYear,
+            data:                 prevData,
+            borderColor:          "#4F8FEE",
+            backgroundColor:      "rgba(79,143,238,.07)",
+            borderWidth:          2,
+            pointBackgroundColor: "#4F8FEE",
+            pointRadius:          4,
+            pointHoverRadius:     6,
+            tension:              0.35,
+            fill:                 false,
+            order:                1,
         });
     }
 
-    // Avvio
-    loadData();
+    const cfg = {
+        type: "bar",
+        data: { labels: MONTHS_IT, datasets },
+        options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            interaction:         { mode: "index", intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "rgba(13,21,40,.95)",
+                    borderColor:     "rgba(26,45,82,.8)",
+                    borderWidth:     1,
+                    titleColor:      "#E8EFFF",
+                    bodyColor:       "#8BA0C0",
+                    padding:         12,
+                    callbacks: {
+                        title: items => MONTHS_FULL[items[0].dataIndex],
+                        label: ctx => {
+                            if (ctx.raw === null || ctx.raw === undefined) return null;
+                            return ` ${ctx.dataset.label}: ${fmt(ctx.raw)} pax`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    grid:   { display: false },
+                    ticks:  { color: "#5A728F", font: { family: "JetBrains Mono", size: 12 } },
+                    border: { color: "#1A2D52" },
+                },
+                y: {
+                    grid:   { color: "rgba(26,45,82,.5)", drawBorder: false },
+                    border: { display: false },
+                    ticks:  {
+                        color: "#5A728F",
+                        font:  { family: "JetBrains Mono", size: 11 },
+                        callback: v => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M`
+                                               : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K`
+                                               : String(v),
+                    },
+                },
+            },
+        },
+    };
+
+    if (chart) chart.destroy();
+    chart = new Chart(canvas, cfg);
+
+    updateStats(year, prevYear, currData, prevData);
+}
+
+/* ─── Stats cards ─────────────────────────────────────────────────────────── */
+function updateStats(year, prevYear, currData, prevData) {
+    const valid = currData.filter(v => v !== null);
+    if (!valid.length) {
+        ["stat-total","stat-peak","stat-avg","stat-yoy"].forEach(id =>
+            document.getElementById(id).textContent = "—"
+        );
+        return;
+    }
+
+    const total = valid.reduce((a, b) => a + b, 0);
+    document.getElementById("stat-total").textContent     = fmtM(total);
+    document.getElementById("stat-total-sub").textContent = `${fmt(total)} passeggeri`;
+
+    const peakVal = Math.max(...valid);
+    const peakIdx = currData.findIndex(v => v === peakVal);
+    document.getElementById("stat-peak").textContent     = fmtM(peakVal);
+    document.getElementById("stat-peak-sub").textContent = MONTHS_FULL[peakIdx] || "—";
+
+    const avg = Math.round(total / valid.length);
+    document.getElementById("stat-avg").textContent     = fmtM(avg);
+    document.getElementById("stat-avg-sub").textContent = `${valid.length} mesi registrati`;
+
+    const prevValid = prevData.filter(v => v !== null);
+    const yoyEl     = document.getElementById("stat-yoy");
+    const yoySub    = document.getElementById("stat-yoy-sub");
+
+    if (prevValid.length > 0) {
+        let currSum = 0, prevSum = 0;
+        currData.forEach((v, i) => {
+            if (v !== null && prevData[i] !== null) {
+                currSum += v;
+                prevSum += prevData[i];
+            }
+        });
+        if (prevSum > 0) {
+            const pct  = ((currSum - prevSum) / prevSum * 100).toFixed(1);
+            const sign = pct >= 0 ? "+" : "";
+            yoyEl.textContent  = `${sign}${pct}%`;
+            yoyEl.className    = `stat-value ${pct >= 0 ? "green" : "red"}`;
+            yoySub.textContent = `vs ${prevYear} (mesi comparabili)`;
+        }
+    } else {
+        yoyEl.textContent  = "—";
+        yoySub.textContent = "Nessun dato precedente";
+    }
+}
+
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
+function fmt(n) {
+    if (n == null) return "—";
+    return new Intl.NumberFormat("it-IT").format(n);
+}
+function fmtM(n) {
+    if (n == null) return "—";
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + "K";
+    return String(n);
+}
+function showEmpty(msg) {
+    document.getElementById("loading-msg").innerHTML =
+        `<div class="icon">📭</div><div>${msg}</div>`;
+}
+let toastTimer;
+function showToast(msg, type = "") {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className   = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = "toast"; }, 4000);
+}
 </script>
 </body>
 </html>
