@@ -84,15 +84,23 @@ def scrape_and_update():
     links = soup.find_all('a', href=True)
     xls_links = []
     
-    # Trova tutti i link a file Excel
+    print(f"DEBUG: Trovati in totale {len(links)} link generici nella pagina.")
+    
+    # Trova tutti i link a file Excel verificando se contengono .xls o .xlsx
     for a in links:
         href = a['href']
-        if href.lower().endswith('.xls') or href.lower().endswith('.xlsx'):
+        if '.xls' in href.lower() or '.xlsx' in href.lower():
             full_url = urljoin(BASE_URL, href)
             xls_links.append(full_url)
 
     print(f"Trovati {len(xls_links)} file Excel. Estrazione dei mesi e anni...")
     
+    # Alert di debug se nessun link Excel corrisponde ai criteri
+    if len(xls_links) == 0:
+        print("DEBUG ALERT: Nessun link Excel trovato! Mostro i primi 10 link della pagina per controllo:")
+        for a in links[:10]:
+            print(f" -> Testo: {a.text.strip()} | Href: {a['href']}")
+
     # Carichiamo i dati esistenti se ci sono
     if os.path.exists(JSON_PATH):
         with open(JSON_PATH, 'r', encoding='utf-8') as f:
@@ -100,14 +108,24 @@ def scrape_and_update():
     else:
         data = {}
 
-    pattern = re.compile(r'/(\d{4})_(\d{2})\.(xlsx|xls)', re.IGNORECASE)
+    # Regex flessibile per trovare pattern tipo ANNO_MESE o MESE_ANNO separati da underscore o trattino
+    pattern_generico = re.compile(r'(\d{4})[-_](\d{2})|(\d{2})[-_](\d{4})')
     
     for url in xls_links:
-        match = pattern.search(url)
+        print(f"DEBUG Analisi URL: {url}")
+        
+        match = pattern_generico.search(url)
         if match:
-            year = match.group(1)
-            month = match.group(2)
-            ext = match.group(3)
+            # Estrazione sicura di anno e mese
+            if match.group(1): # Caso in cui viene prima l'anno (es. 2026_05)
+                year = match.group(1)
+                month = match.group(2)
+            else: # Caso in cui viene prima il mese (es. 05_2026)
+                month = match.group(3)
+                year = match.group(4)
+            
+            # Ricaviamo l'estensione per salvare il file in modo corretto per il parser
+            ext = '.xlsx' if '.xlsx' in url.lower() else '.xls'
             
             # Se l'anno non è nel dict, lo inizializziamo con 12 zeri
             if year not in data:
@@ -115,16 +133,17 @@ def scrape_and_update():
                 
             month_idx = int(month) - 1
             
-            # Se abbiamo già un dato > 0 per quel mese/anno, saltiamo per evitare download inutili
+            # Se abbiamo già un dato > 0 per quel mese/anno, saltiamo
             if data[year][month_idx] > 0:
+                print(f"Dati per {year}-{month} già presenti, salto.")
                 continue
                 
-            filename = f"{year}_{month}.{ext}"
+            filename = f"{year}_{month}{ext}"
             file_path = os.path.join(XLS_DIR, filename)
             
             # Scarica il file se non esiste
             if not os.path.exists(file_path):
-                print(f"Scaricando {filename}...")
+                print(f"Scaricando {filename} da {url}...")
                 try:
                     r = requests.get(url)
                     r.raise_for_status()
@@ -143,6 +162,8 @@ def scrape_and_update():
                 print(f"Trovato: {year}-{month} -> {arrivals} arrivi")
             else:
                 print(f"Nessun dato trovato per Palma in {filename}")
+        else:
+            print(f" -> URL ignorato (non corrisponde al pattern della data)")
 
     # Salva il JSON aggiornato
     with open(JSON_PATH, 'w', encoding='utf-8') as f:
@@ -151,4 +172,3 @@ def scrape_and_update():
 
 if __name__ == "__main__":
     scrape_and_update()
-            
